@@ -1,1 +1,29 @@
+CREATE VIEW vw_dashboard_actuarial AS
+SELECT
+    -- Risk Segmentation
+    CASE 
+        WHEN driver_age < 25 THEN 'Young'
+        WHEN driver_age BETWEEN 25 AND 60 THEN 'Adult'
+        ELSE 'Senior'
+    END AS driver_age_group,
+    car_power,
+    region,
 
+    -- Aggregated Metrics
+    COUNT(*) AS total_policies,
+    SUM(claim_nb) AS total_claims,
+    AVG(CAST(claim_nb AS FLOAT)) AS avg_claim_frequency,
+    AVG(CAST(claimamount AS FLOAT)) AS avg_claim_severity,
+    -- Expected loss per policy
+    AVG(CAST(claim_nb AS FLOAT) * CAST(claimamount AS FLOAT)) AS expected_loss,
+    -- Suggested premium with 20% loading factor
+    AVG(CAST(claim_nb AS FLOAT) * CAST(claimamount AS FLOAT) * 1.2) AS suggested_premium
+FROM VW_policy
+GROUP BY
+    CASE 
+        WHEN driver_age < 25 THEN 'Young'
+        WHEN driver_age BETWEEN 25 AND 60 THEN 'Adult'
+        ELSE 'Senior'
+    END,
+    car_power,
+    region;
